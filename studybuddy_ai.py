@@ -18,7 +18,7 @@ st.set_page_config(
 st.markdown("""
 <style>
 [data-testid="stAppViewContainer"] {
-    background: linear-gradient(135deg,#0f172a,#1e293b,#111827);
+    background: linear-gradient(135deg,#1e293b,#334155,#0f172a);
 }
 .big-title {
     font-size: 50px;
@@ -43,7 +43,6 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
 st.markdown('<div class="big-title">🎓 Study Buddy AI</div>', unsafe_allow_html=True)
 st.caption("AI-Powered Academic Intelligence Platform for AKTU B.Tech Students")
 
