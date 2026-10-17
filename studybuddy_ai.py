@@ -46,7 +46,7 @@ st.markdown("""
 st.markdown('<div class="big-title">🎓 Study Buddy AI</div>', unsafe_allow_html=True)
 st.caption("AI-Powered Academic Intelligence Platform for AKTU B.Tech Students")
 
-# ================= LOGIN SYSTEM =================
+# ================= LOGIN SYSTEM =================image.png
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 

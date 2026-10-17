@@ -1,0 +1,17 @@
+Student_ID	Student	Semester	Subject	Unit	Topic	Quiz_1	Quiz_2	Assignment
+STU001	Demo Student 1	4th Semester	DBMS	Unit 1	Database Fundamentals	72	78	80
+STU001	Demo Student 1	4th Semester	DBMS	Unit 2	ER Model	65	70	74
+STU001	Demo Student 1	4th Semester	DBMS	Unit 3	SQL	82	85	88
+STU002	Demo Student 2	4th Semester	DBMS	Unit 1	Database Fundamentals	55	60	58
+STU002	Demo Student 2	4th Semester	DBMS	Unit 2	ER Model	48	52	56
+STU002	Demo Student 2	4th Semester	DBMS	Unit 3	SQL	68	64	70
+STU003	Demo Student 3	4th Semester	DBMS	Unit 1	Database Fundamentals	88	90	92
+STU003	Demo Student 3	4th Semester	DBMS	Unit 2	ER Model	80	84	86
+STU003	Demo Student 3	4th Semester	DBMS	Unit 3	SQL	91	89	94
+STU004	Demo Student 4	4th Semester	DBMS	Unit 1	Database Fundamentals	62	58	66
+STU004	Demo Student 4	4th Semester	DBMS	Unit 2	ER Model	57	54	61
+STU004	Demo Student 4	4th Semester	DBMS	Unit 3	SQL	60	63	65
+STU005	Demo Student 5	6th Semester	Machine Learning	Unit 1	ML Basics	74	78	81
+STU005	Demo Student 5	6th Semester	Machine Learning	Unit 2	Model Evaluation	58	62	68
+STU006	Demo Student 6	6th Semester	Machine Learning	Unit 1	ML Basics	85	88	90
+STU006	Demo Student 6	6th Semester	Machine Learning	Unit 2	Model Evaluation	79	83	87

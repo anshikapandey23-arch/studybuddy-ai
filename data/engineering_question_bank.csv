@@ -1,0 +1,16 @@
+Branch	Semester	Subject	Unit	Topic	Question	Answer	Difficulty
+CSE	4th Semester	DBMS	Unit 1	Database Fundamentals	What is a DBMS? Explain its advantages.	"A DBMS is software used to define, create, store, retrieve, and manage data in a database. Advantages include reduced redundancy, consistency, security, sharing, and backup/recovery."	Easy
+CSE	4th Semester	DBMS	Unit 1	Database Fundamentals	Differentiate between a file system and a DBMS.	"A file system stores data in separate files with limited centralized control. A DBMS provides structured querying, integrity constraints, concurrency control, and centralized management."	Medium
+CSE	4th Semester	DBMS	Unit 2	ER Model	What is an entity and an attribute in an ER model?	An entity is a distinguishable real-world object; an attribute is a property describing that entity.	Easy
+CSE	4th Semester	DBMS	Unit 3	SQL	Write an SQL query to display all students with marks greater than 75.	SELECT * FROM Students WHERE marks > 75;	Easy
+CSE	4th Semester	DBMS	Unit 3	SQL	Explain the difference between WHERE and HAVING.	WHERE filters rows before grouping; HAVING filters groups after GROUP BY.	Medium
+CSE	4th Semester	Operating Systems	Unit 1	OS Fundamentals	What is a process? How is it different from a program?	A program is a passive set of instructions; a process is a program in execution with state and allocated resources.	Easy
+CSE	4th Semester	Operating Systems	Unit 2	CPU Scheduling	What is the purpose of CPU scheduling?	"CPU scheduling selects a ready process for CPU execution to improve utilization, throughput, response time, and waiting time."	Medium
+CSE	4th Semester	Operating Systems	Unit 3	Deadlocks	State the four necessary conditions for deadlock.	"Mutual exclusion, hold and wait, no preemption, and circular wait."	Medium
+CSE	5th Semester	Computer Networks	Unit 1	Network Basics	Differentiate between TCP and UDP.	TCP is connection-oriented and provides reliable ordered delivery; UDP is connectionless with lower overhead but no delivery guarantee.	Easy
+CSE	5th Semester	Computer Networks	Unit 2	OSI Model	List the seven layers of the OSI model.	"Physical, Data Link, Network, Transport, Session, Presentation, and Application."	Easy
+CSE	5th Semester	Software Engineering	Unit 1	Software Process	What is the software development life cycle?	"SDLC is a structured process commonly including requirements, design, implementation, testing, deployment, and maintenance."	Easy
+CSE	6th Semester	Machine Learning	Unit 1	ML Basics	Differentiate supervised and unsupervised learning.	Supervised learning uses labelled examples; unsupervised learning finds patterns in unlabelled data.	Easy
+CSE	6th Semester	Machine Learning	Unit 2	Model Evaluation	What is overfitting in machine learning?	Overfitting occurs when a model learns training-specific noise or details and performs poorly on unseen data.	Medium
+CSE	3rd Semester	Data Structures	Unit 1	Complexity	What does Big-O notation describe?	Big-O describes an asymptotic upper bound on how an algorithm's resource use grows with input size.	Easy
+CSE	3rd Semester	Data Structures	Unit 2	Stacks and Queues	What is the difference between a stack and a queue?	A stack follows LIFO; a queue follows FIFO.	Easy
