@@ -6,7 +6,11 @@ import random
 from openai import OpenAI
 import pandas as pd
 import io
-
+from pathlib import Path
+# ================= LOCAL NOTES STORAGE =================
+BASE_DIR = Path(__file__).resolve().parent
+NOTES_DIR = BASE_DIR / "notes"
+NOTES_DIR.mkdir(parents=True, exist_ok=True)
 # ================= PAGE CONFIG =================
 st.set_page_config(
     page_title="Study Buddy AI",
@@ -247,28 +251,97 @@ if role == "Student":
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # -------- AI COMPANION --------
+   
+    # -------- AI COMPANION CHATBOT --------
     with tabs[3]:
+        st.subheader("🤖 StudyBuddy AI Companion")
+        st.caption(
+            "Your academic assistant for AKTU B.Tech subjects, "
+            "concept explanations and exam preparation."
+        )
 
-        query = st.text_area("Ask for Smart Notes / PYQs / Strategy / Important Topics")
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
 
-        if st.button("Generate AI Assistance"):
+        # Show previous messages in this session
+        for message in st.session_state.chat_history:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-            if api_key and query:
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role":"system","content":"You are an academic AI assistant specialized for AKTU B.Tech CSE syllabus. Provide structured, concise, exam-focused content."},
-                        {"role":"user","content":query}
-                    ]
+        prompt = st.chat_input(
+            "Ask an academic question...",
+            key="studybuddy_chat_input"
+        )
+
+        if prompt:
+            st.session_state.chat_history.append(
+                {"role": "user", "content": prompt}
+            )
+
+            with st.chat_message("user"):
+                st.markdown(prompt)
+
+            if client is None:
+                st.warning(
+                    "Enter your OpenAI API key in the sidebar first."
                 )
-
-                st.markdown('<div class="glass">', unsafe_allow_html=True)
-                st.success(response.choices[0].message.content)
-                st.markdown('</div>', unsafe_allow_html=True)
-
             else:
-                st.warning("Enter API Key and Question")
+                try:
+                    with st.chat_message("assistant"):
+                        with st.spinner("StudyBuddy is thinking..."):
+                            messages = [
+                                {
+                                    "role": "system",
+                                    "content": (
+                                        "You are StudyBuddy AI, an academic "
+                                        "tutor for AKTU B.Tech engineering "
+                                        "students. Explain concepts clearly "
+                                        "using simple language, headings, "
+                                        "examples and step-by-step reasoning. "
+                                        "Provide exam-oriented answers when "
+                                        "requested. Be honest when you do not "
+                                        "know something. Never claim that "
+                                        "generated questions are official "
+                                        "AKTU previous-year questions unless "
+                                        "verified."
+                                    )
+                                }
+                            ]
+
+                            # Keep recent conversation context
+                            messages.extend(
+                                st.session_state.chat_history[-10:]
+                            )
+
+                            response = client.chat.completions.create(
+                                model="gpt-4o-mini",
+                                messages=messages
+                            )
+
+                            answer = (
+                                response.choices[0].message.content
+                                or "I could not generate a response."
+                            )
+
+                            st.markdown(answer)
+
+                    st.session_state.chat_history.append(
+                        {"role": "assistant", "content": answer}
+                    )
+
+                except Exception as exc:
+                    st.error(
+                        "The chatbot request failed. Check your API key, API billing, "
+                        f"internet connection and model access. Details: {exc}"
+                    )
+
+        if st.button(
+            "Clear Chat History",
+            key="clear_studybuddy_chat"
+        ):
+            st.session_state.chat_history = []
+            st.rerun()
+
 
     # -------- PYQ & Notes --------
     with tabs[4]:
@@ -283,12 +356,13 @@ if role == "Student":
                 "Upload Previous Year Question Paper (PDF or TXT)", 
                 key="pyq_upload", type=["pdf", "txt"]
             )
-            if uploaded_pyq:
+            if uploaded_pyq and st.session_state.get("last_pyq_filename") != uploaded_pyq.name:
                 st.session_state.pyq_files.append({
                     "name": uploaded_pyq.name,
-                    "content": uploaded_pyq.read(),
+                    "content": uploaded_pyq.getvalue(),
                     "type": uploaded_pyq.type
                 })
+                st.session_state.last_pyq_filename = uploaded_pyq.name
                 st.success(f"File '{uploaded_pyq.name}' uploaded.")
             
             # List uploaded files
@@ -319,68 +393,97 @@ if role == "Student":
                 
                 # AI analysis button
                 if st.button("AI Analyze PYQ Paper", key="pyq_ai_analyze_btn"):
-                    with st.spinner("Analyzing with AI..."):
-                        ai_prompt = f"Analyze this AKTU B.Tech previous year paper:\n{preview_text}\n\nList:\n- Frequently asked topics\n- Most repeated units (Unit 1-5)\n- Exam pattern summary\nReturn in JSON with keys 'topics', 'units', 'pattern_summary'."
-                        response = client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=[
-                                {"role": "system", "content": "You are an expert academic paper analyzer for syllabus exam patterns."},
-                                {"role": "user", "content": ai_prompt}
-                            ]
-                        )
-                        import json
-                        try:
-                            payload = json.loads(response.choices[0].message.content)
-                        except Exception:
-                            payload = {
-                                "topics": ["Sample Topic 1", "Sample Topic 2"],
-                                "units": {"Unit 1": 4, "Unit 2": 3, "Unit 3": 2, "Unit 4": 1, "Unit 5": 1},
-                                "pattern_summary": "Usually 5 sections, short & long answer mix."
-                            }
-
-                        st.markdown("**Frequently Asked Topics:**")
-                        for topic in payload["topics"]:
-                            st.write(f"- {topic}")
-
-                        st.markdown("**Most Repeated Units:**")
-                        units_data = payload["units"] if isinstance(payload["units"], dict) else {}
-                        if units_data:
-                            # Bar Chart
-                            fig = px.bar(
-                                x=list(units_data.keys()),
-                                y=list(units_data.values()),
-                                labels={"x":"Unit", "y":"No. of Repetitions"},
-                                title="Unit Frequency in PYQ",
-                                template="plotly_dark"
-                            )
-                            fig.update_layout(paper_bgcolor="#0f172a", font_color="white")
-                            st.plotly_chart(fig, use_container_width=True)
-                        st.markdown("**Exam pattern summary:**")
-                        st.info(payload["pattern_summary"])
+                    if client is None:
+                        st.warning("Enter your OpenAI API key in the sidebar first.")
+                    else:
+                        with st.spinner("Analyzing with AI..."):
+                            try:
+                                import json
+                                ai_prompt = f"Analyze this AKTU B.Tech previous year paper:\n{preview_text}\n\nList frequently asked topics, most repeated units (Unit 1-5), and exam pattern summary. Return JSON with keys topics (list), units (object), pattern_summary (string)."
+                                response = client.chat.completions.create(
+                                    model="gpt-4o-mini",
+                                    messages=[
+                                        {"role": "system", "content": "You are an academic paper analyzer. Distinguish observations from guesses."},
+                                        {"role": "user", "content": ai_prompt}
+                                    ]
+                                )
+                                payload = json.loads(response.choices[0].message.content or "{}")
+                                topics = payload.get("topics", [])
+                                units_data = payload.get("units", {})
+                                summary = payload.get("pattern_summary", "No summary returned.")
+                                st.markdown("**Frequently Asked Topics:**")
+                                for topic in topics:
+                                    st.write(f"- {topic}")
+                                st.markdown("**Most Repeated Units:**")
+                                if isinstance(units_data, dict) and units_data:
+                                    fig = px.bar(
+                                        x=list(units_data.keys()), y=list(units_data.values()),
+                                        labels={"x": "Unit", "y": "Estimated repetitions"},
+                                        title="Unit Frequency in PYQ", template="plotly_dark"
+                                    )
+                                    fig.update_layout(paper_bgcolor="#0f172a", font_color="white")
+                                    st.plotly_chart(fig, use_container_width=True)
+                                st.markdown("**Exam pattern summary:**")
+                                st.info(summary)
+                            except Exception as exc:
+                                st.error(f"Could not analyze the PYQ. Check the API key, billing, and connection. Details: {exc}")
 
             elif selected_idx is not None:
                 st.info("Enter OpenAI API key to enable AI analysis.")
 
-        # ------ RIGHT: Notes Library ------
+        # ------ RIGHT: Persistent Local Notes Library ------
         with right:
             st.markdown("#### 📚 Subject Notes Library")
-            uploaded_note = st.file_uploader(
-                "Upload Your Notes (PDF or TXT)", key="notes_upload", type=["pdf", "txt"]
-            )
-            if uploaded_note:
-                st.session_state.notes_files.append({
-                    "name": uploaded_note.name,
-                    "content": uploaded_note.read(),
-                    "type": uploaded_note.type
-                })
-                st.success(f"Notes '{uploaded_note.name}' uploaded.")
-            # List available notes
-            if st.session_state.notes_files:
-                st.markdown("##### Your Notes Library")
-                for i, file in enumerate(st.session_state.notes_files):
-                    st.write(f"{i+1}. {file['name']}")
+            st.caption("Files are saved in the project's notes folder and remain after restarting the app.")
 
-            # Placeholder: download/view logic can go here in future
+            uploaded_note = st.file_uploader(
+                "Upload notes (PDF, TXT, or Markdown)",
+                type=["pdf", "txt", "md"],
+                key="persistent_notes_upload"
+            )
+
+            if uploaded_note is not None:
+                safe_name = Path(uploaded_note.name).name
+                destination = NOTES_DIR / safe_name
+                try:
+                    if destination.exists():
+                        st.warning(f"{safe_name} already exists. Rename the file before uploading it again.")
+                    else:
+                        destination.write_bytes(uploaded_note.getvalue())
+                        st.success(f"Saved {safe_name} in the notes folder.")
+                except OSError as exc:
+                    st.error(f"Could not save the note: {exc}")
+
+            saved_notes = sorted(
+                path for path in NOTES_DIR.iterdir()
+                if path.is_file() and path.suffix.lower() in {".pdf", ".txt", ".md"}
+            )
+
+            if saved_notes:
+                st.markdown("##### Saved Notes")
+                for note_path in saved_notes:
+                    with st.expander(f"📄 {note_path.name}"):
+                        if note_path.suffix.lower() in {".txt", ".md"}:
+                            try:
+                                st.text_area(
+                                    "Preview",
+                                    value=note_path.read_text(encoding="utf-8"),
+                                    height=180,
+                                    key=f"preview_{note_path.name}"
+                                )
+                            except (UnicodeDecodeError, OSError):
+                                st.info("This text file could not be previewed.")
+                        else:
+                            st.info("PDF saved. Use the button below to download it.")
+
+                        st.download_button(
+                            "Download note",
+                            data=note_path.read_bytes(),
+                            file_name=note_path.name,
+                            key=f"download_{note_path.name}"
+                        )
+            else:
+                st.info("No saved notes yet. Upload your first note above.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -388,7 +491,7 @@ if role == "Student":
 if role == "Teacher":
 
     st.subheader("👩‍🏫 Faculty Analytics Dashboard")
-
+    
     semester = st.selectbox("Select Semester", list(aktu_structure.keys()))
     subject = st.selectbox("Select Subject", aktu_structure[semester])
 
